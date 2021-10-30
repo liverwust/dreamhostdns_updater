@@ -3,6 +3,7 @@
 import os
 from uuid import uuid4 as uuid
 import cgi
+import csv
 import requests
 
 list_url = 'https://api.dreamhost.com/?key={apikey}&cmd=dns-list_records&unique_id={uuid}'
@@ -26,12 +27,18 @@ if __name__ == '__main__':
         d['comment'] = d['comment'].replace (' ', '%20')
         d['recordtype'] = "A"
         r = requests.get (list_url.format (**d))
-        for l in r.text.split ('\n'):
-            fields = l.split ('\t')
+        # Sample return from the list API call:
+        #
+        # success<NEWLINE<
+        # account_id<TAB>zone<TAB>record<TAB>type<TAB>value<TAB>comment<TAB>editable<NEWLINE>
+        # 12345<TAB>example.com<TAB>test.example.com<TAB>A<TAB>1.2.3.4<TAB>test record<TAB>0<NEWLINE>
+        #
+        listing = csv.DictReader ((r.text.split ('\n'))[1:], dialect='excel-tab')
+        for fields in listing:
             if len(fields) < 5:
                 continue
-            if fields[2] == d['hostname'] and fields[3] == d['recordtype']:
-                d['old_addr'] = fields[4]
+            if fields['record'] == d['hostname'] and fields['type'] == d['recordtype']:
+                d['old_addr'] = fields['value']
                 if d['old_addr'] != d['new_addr']:
                     d['uuid'] = str(uuid())
                     if "testing" in form:
