@@ -25,7 +25,10 @@ if __name__ == '__main__':
         d['comment'] = 'Updated by OPNsense via dreamhostdns_updater.cgi'
         d['comment'] = d['comment'].replace (' ', '%20')
         d['recordtype'] = "A"
-        r = requests.get (list_url.format (**d))
+        if "testing" in form:
+            print (list_url.format (**d))
+        else:
+            r = requests.get (list_url.format (**d))
         for l in r.text.split ('\n'):
             fields = l.split ('\t')
             if len(fields) < 5:
