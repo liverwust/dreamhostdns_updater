@@ -48,6 +48,7 @@ if __name__ == '__main__':
                         r = requests.get (add_url.format (**d))
                 break
         else:
+            d['uuid'] = str(uuid())
             if "testing" in form:
                 print (add_url.format (**d))
             else:
